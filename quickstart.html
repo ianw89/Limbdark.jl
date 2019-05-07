@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Quick start · Limbdark</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>Limbdark</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search.html"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="index.html">Home</a></li><li><a class="toctext" href="install.html">Installation</a></li><li class="current"><a class="toctext" href="quickstart.html">Quick start</a><ul class="internal"><li><a class="toctext" href="#A-simple-light-curve-1">A simple light curve</a></li></ul></li><li><a class="toctext" href="api.html">API</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href="quickstart.html">Quick start</a></li></ul><a class="edit-page" href="https://github.com/rodluger/Limbdark.jl/blob/master/docs/src/quickstart.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Quick start</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Quick-start-1" href="#Quick-start-1">Quick start</a></h1><h2><a class="nav-anchor" id="A-simple-light-curve-1" href="#A-simple-light-curve-1">A simple light curve</a></h2><p>First, let&#39;s import <code>Limbdark</code>:</p><pre><code class="language-julia">import Limbdark</code></pre><p>Now let&#39;s define some quantities we&#39;ll use throughout these examples:</p><pre><code class="language-julia"># Define an array of impact parameters
+npts = 100
+b = zeros(npts)
+for i = 1:npts
+    b[i] = 3.0 * ((i - 0.5) / float(npts) - 0.5)
+end
+
+# Define the occultor radius
+r = 0.1
+
+# Define the quadratic limb darkening coefficients
+u_n = [0.40, 0.26]
+
+# Define the struct to hold the transit info
+trans = Limbdark.transit_init(r, 0.0, u_n, true)</code></pre><p>To compute a light curve, we call the <code>transit_poly!(trans)</code> method:</p><pre><code class="language-julia">flux = zeros(npts)
+for i = 1:npts
+    trans.b = abs(b[i])
+    flux[i] = Limbdark.transit_poly!(trans)
+end</code></pre><p>Here&#39;s what the light curve looks like:</p><pre><code class="language-julia">plot(b, flux, linewidth=2);</code></pre><p><img src="example1.svg" alt/></p><p>We can also compute the derivatives with respect to <code>r</code>, <code>b</code>, and <code>u_n</code>:</p><pre><code class="language-julia">dfdr = zeros(npts)
+dfdb = zeros(npts)
+dfdu1 = zeros(npts)
+dfdu2 = zeros(npts)
+for i = 1:npts
+    trans.b = abs(b[i])
+    flux[i] = Limbdark.transit_poly!(trans)
+    dfdr[i] = trans.dfdrb[1]
+    dfdb[i] = trans.dfdrb[2]
+    dfdu1[i] = trans.dfdu[1]
+    dfdu2[i] = trans.dfdu[2]
+end</code></pre><p>Here&#39;s what they all look like:</p><pre><code class="language-julia">plot(b, dfdr, label=&quot;df/dr&quot;)
+plot(b, dfdb, label=&quot;df/db&quot;)
+plot(b, dfdu1, label=&quot;df/du1&quot;)
+plot(b, dfdu2, label=&quot;df/du2&quot;)</code></pre><p><img src="example2.svg" alt/></p><footer><hr/><a class="previous" href="install.html"><span class="direction">Previous</span><span class="title">Installation</span></a><a class="next" href="api.html"><span class="direction">Next</span><span class="title">API</span></a></footer></article></body></html>
